@@ -1,20 +1,40 @@
 const express = require("express");
 const app = express();
+const handlebars = require('express-handlebars');
+const bodyParser = require('body-parser');
+const Post = require("./models/post")
 
-app.get("/", function(req, res){
-    res.sendFile(__dirname + "/html/index.html");
-});
 
-app.get("/sobre", function(req, res){
-    res.sendFile(__dirname + "/html/sobre.html");
-});
+// Config
+    // Template Engine
 
-app.get("/blog", function(req, res){
-    res.send("Bem vindo ao meu blog");
-});
+        app.engine('handlebars', handlebars.engine({defaultLayout: 'main'}))
+        app.set('view engine', 'handlebars')
 
-app.get("/ola/:nome/:cargo", function(req, res){
-    res.send("<h1>Ola " + req.params.nome+"</h1>"+"\n<h2>Seu cargo e: "+req.params.cargo+"</h2>");
-})
+    // Body Parser
 
-app.listen(8081); 
+        app.use(bodyParser.urlencoded({extended: false}))
+        app.use(bodyParser.json())
+
+
+// Rotas
+        app.get("/", function(req, res){
+            res.render("home")
+        })
+
+        app.get('/cad', function(req, res){
+            res.render('formulario')
+        })
+
+        app.post("/add", function(req, res){
+            Post.create({
+                titulo: req.body.titulo,
+                conteudo: req.body.conteudo
+            }).then(function(){
+                res.redirect('/')
+            }).catch(function(erro){
+                res.send("Houve um erro: " + erro)
+            })
+        })
+
+app.listen(8081)
